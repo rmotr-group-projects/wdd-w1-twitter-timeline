@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django_webtest import WebTest
 
-from twitter.models import Tweet
+from twitter.models import Tweet, Relationship
 
 try:
     from urllib.parse import quote
@@ -17,6 +17,8 @@ class BaseTwitterCloneTestCase(WebTest):
             username='jack', email='jack@twitter.com', password='coffee')
         self.ev = User.objects.create_user(
             username='evan', email='ev@twitter.com', password='coffee')
+        self.larry = User.objects.create_user(
+            username='larry', email='larry@twitter.com', password='coffee')  
 
     def get_session_cookie(self, cookie_name='sessionid'):
         for cookie in self.app.cookiejar:
@@ -31,6 +33,43 @@ class BaseTwitterCloneTestCase(WebTest):
 
         self.app.cookiejar.clear(
             sid_cookie.domain, sid_cookie.path, sid_cookie.name)
+
+
+class TweetTimelineTestCase(BaseTwitterCloneTestCase):
+    def test_timeline(self):
+        "Should list tweets from both authenticated user and users that he is following"
+        # Preconditions
+        Relationship.objects.create(follower=self.jack, following=self.ev)
+        Relationship.objects.create(follower=self.jack, following=self.larry)
+        Tweet.objects.create(user=self.jack, content='Tweet Jack 1')
+        Tweet.objects.create(user=self.ev, content='Tweet Evan 1')
+        Tweet.objects.create(user=self.larry, content='Tweet Larry 1')
+        self.assertEqual(Relationship.objects.count(), 2)
+        self.assertEqual(Tweet.objects.count(), 3)
+        
+        # first user timeline
+        resp = self.app.get('/', user=self.jack)
+        feed = resp.html.find('div', class_='tweet-feed')
+        tweets = feed.find_all('div', class_='tweet-container')
+        tweet_contents = [tweet.find('div', class_='tweet-content').text 
+                          for tweet in tweets]
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(tweets), 3)
+        self.assertTrue('Tweet Jack 1' in tweet_contents)
+        self.assertTrue('Tweet Evan 1' in tweet_contents)
+        self.assertTrue('Tweet Larry 1' in tweet_contents)
+
+        # second user timeline
+        resp = self.app.get('/', user=self.ev)
+        feed = resp.html.find('div', class_='tweet-feed')
+        tweets = feed.find_all('div', class_='tweet-container')
+        tweet_contents = [tweet.find('div', class_='tweet-content').text 
+                          for tweet in tweets]        
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(tweets), 1)
+        self.assertFalse('Tweet Jack 1' in tweet_contents)
+        self.assertTrue('Tweet Evan 1' in tweet_contents)
+        self.assertFalse('Tweet Larry 1' in tweet_contents)        
 
 
 class NotAuthenticatedTestCase(BaseTwitterCloneTestCase):

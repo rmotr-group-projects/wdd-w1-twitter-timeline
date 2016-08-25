@@ -5,8 +5,9 @@ from django.contrib.auth import logout as django_logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
+from django.db.models import Q
 
-from .models import Tweet
+from .models import Tweet, Relationship
 from .forms import TweetForm
 
 
@@ -39,7 +40,9 @@ def home(request, username=None):
         if username is not None:
             user = get_object_or_404(get_user_model(), username=username)
             form = None
-    tweets = Tweet.objects.filter(user=user)
+    users_following = [rel.following for rel 
+                       in Relationship.objects.filter(follower=user)]
+    tweets = Tweet.objects.filter(Q(user=user) | Q(user__in=users_following))
     return render(request, 'feed.html', {
         'form': form,
         'twitter_profile': user,

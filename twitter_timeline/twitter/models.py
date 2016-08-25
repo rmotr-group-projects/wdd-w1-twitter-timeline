@@ -9,3 +9,8 @@ class Tweet(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     content = models.CharField(max_length=140)
     created = models.DateTimeField(auto_now_add=True)
+
+
+class Relationship(models.Model):
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL)
+    following = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
