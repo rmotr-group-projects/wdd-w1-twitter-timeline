@@ -56,7 +56,7 @@
           {% endif %}
           <div>
               <strong>@{{tweet.user.username}}</strong>
-              <span class="label label-primary">{{tweet.created}}</span>
+              <span class="label label-primary created-datetime">{{tweet.created|date:"SHORT_DATETIME_FORMAT"}}</span>
           </div>
           <div class='tweet-content'>{{ tweet.content }}</div>
       </div>

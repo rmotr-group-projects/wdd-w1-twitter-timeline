@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django_webtest import WebTest
 
@@ -16,7 +18,7 @@ class TweetTimelineTestCase(WebTest):
             username='larry', email='larry@twitter.com', password='coffee')      
     
     def test_timeline(self):
-        "Should list tweets from both authenticated user and users that he is following"
+        """Should list tweets from both authenticated user and users that he is following"""
         # Preconditions
         self.jack.follow(self.ev)
         self.jack.follow(self.larry)
@@ -49,8 +51,31 @@ class TweetTimelineTestCase(WebTest):
         self.assertTrue('Tweet Evan 1' in tweet_contents)
         self.assertFalse('Tweet Larry 1' in tweet_contents)        
         
+    def test_timeline_tweets_ordering(self):
+        """Should list tweets in timeline ordered by creation datetime"""        
+        self.jack.follow(self.ev)
+        tw1 = Tweet.objects.create(user=self.jack, content='Tweet Jack 1')
+        tw1.created = datetime(2015, 6, 22, 21, 55, 10)
+        tw1.save()
+        tw2 = Tweet.objects.create(user=self.ev, content='Tweet Evan 1')
+        tw2.created = datetime(2014, 6, 22, 21, 55, 10)
+        tw2.save()
+        tw3 = Tweet.objects.create(user=self.jack, content='Tweet Jack 2')
+        tw3.created = datetime(2016, 6, 22, 21, 55, 10)
+        tw3.save()
+        
+        resp = self.app.get('/', user=self.jack)
+        feed = resp.html.find('div', class_='tweet-feed')
+        tweets = feed.find_all('div', class_='tweet-container')       
+        self.assertTrue('06/22/2016 9:55 p.m.' in 
+                        tweets[0].find('span', class_='created-datetime').text)
+        self.assertTrue('06/22/2015 9:55 p.m.' in 
+                        tweets[1].find('span', class_='created-datetime').text)
+        self.assertTrue('06/22/2014 9:55 p.m.' in 
+                        tweets[2].find('span', class_='created-datetime').text)
+
     def test_timeline_follow_button(self):
-        "Should show follow button when authenticated user is not following current twitter profile"
+        """Should show follow button when authenticated user is not following current twitter profile"""
         # Preconditions
         resp = self.app.get('/evan', user=self.jack)
         button = resp.html.find('div', class_='relationship-button')
@@ -64,7 +89,7 @@ class TweetTimelineTestCase(WebTest):
         self.assertFalse('Follow' in button.text)
         
     def test_timeline_follow_user(self):
-        "Should create a Relationship between authenticated user and given twitter profile"
+        """Should create a Relationship between authenticated user and given twitter profile"""
         # Preconditions
         self.assertEqual(self.jack.count_following, 0)
         self.assertEqual(self.ev.count_followers, 0)        
@@ -81,7 +106,7 @@ class TweetTimelineTestCase(WebTest):
         self.assertTrue(self.jack.is_following(self.ev))
         
     def test_timeline_unfollow_button(self):
-        "Should show unfollow button when authenticated user is following current twitter profile"
+        """Should show unfollow button when authenticated user is following current twitter profile"""
         # Preconditions
         self.jack.follow(self.ev)
         resp = self.app.get('/evan', user=self.jack)
@@ -96,7 +121,7 @@ class TweetTimelineTestCase(WebTest):
         self.assertFalse('Unfollow' in button.text)        
         
     def test_timeline_unfollow_user(self):
-        "Should delete a Relationship between authenticated user and given twitter profile"
+        """Should delete a Relationship between authenticated user and given twitter profile"""
         # Preconditions
         self.jack.follow(self.ev)
         self.assertEqual(self.jack.count_following, 1)

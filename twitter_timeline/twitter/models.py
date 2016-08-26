@@ -29,15 +29,12 @@ class User(AbstractUser):
         try:
             rel = Relationship.objects.get(follower=self, following=twitter_profile)
         except Relationship.DoesNotExist:
-            pass
+            return
         rel.delete()
     
     def is_following(self, twitter_profile):
-        try:
-            Relationship.objects.get(follower=self, following=twitter_profile)
-        except Relationship.DoesNotExist:
-            return False
-        return True
+        return Relationship.objects.filter(
+            follower=self, following=twitter_profile).exists()
         
     @property
     def count_following(self):
