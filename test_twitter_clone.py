@@ -1,6 +1,9 @@
+from django.contrib.auth import get_user_model
 from django_webtest import WebTest
 
-from twitter.models import Tweet, User
+from twitter.models import Tweet
+
+User = get_user_model()
 
 
 class TweetTimelineTestCase(WebTest):

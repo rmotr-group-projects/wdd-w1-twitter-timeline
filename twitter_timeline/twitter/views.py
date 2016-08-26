@@ -40,7 +40,7 @@ def home(request, username=None):
     else:
         form = TweetForm()
         if username is not None:
-            user = get_object_or_404(User, username=username)
+            user = get_object_or_404(get_user_model(), username=username)
             form = None
     users_following = [rel.following for rel 
                        in Relationship.objects.filter(follower=user)]
@@ -57,7 +57,8 @@ def home(request, username=None):
 @login_required()
 @require_POST
 def follow(request):
-    followed = get_object_or_404(User, username=request.POST['username'])
+    followed = get_object_or_404(
+        get_user_model(), username=request.POST['username'])
     Relationship.objects.create(follower=request.user, following=followed)    
     return redirect(request.GET.get('next', '/'))
 
@@ -65,14 +66,12 @@ def follow(request):
 @login_required()
 @require_POST
 def unfollow(request):
-    unfollowed = get_object_or_404(User, username=request.POST['username'])
-    try:
-        Relationship.objects.get(
-            follower=request.user, following=unfollowed).delete()
-    except Relationship.DoesNotExist:
-        return HttpResponseNotFound(
-            'Relationship between authenticated user and '
-            'given username does not exist')
+    unfollowed = get_object_or_404(
+        get_user_model(), username=request.POST['username'])
+        
+    relationship = get_object_or_404(
+        Relationship, follower=request.user, following=unfollowed)
+    relationship.delete()
     return redirect(request.GET.get('next', '/'))
 
 
