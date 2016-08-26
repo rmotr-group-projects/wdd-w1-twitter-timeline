@@ -42,8 +42,7 @@ def home(request, username=None):
         if username is not None:
             user = get_object_or_404(get_user_model(), username=username)
             form = None
-    users_following = [rel.following for rel 
-                       in Relationship.objects.filter(follower=user)]
+    users_following = request.user.following
     tweets = Tweet.objects.filter(Q(user=user) | Q(user__in=users_following))
     following_profile = request.user.is_following(user)
     return render(request, 'feed.html', {
@@ -59,7 +58,7 @@ def home(request, username=None):
 def follow(request):
     followed = get_object_or_404(
         get_user_model(), username=request.POST['username'])
-    Relationship.objects.create(follower=request.user, following=followed)    
+    request.user.follow(followed)
     return redirect(request.GET.get('next', '/'))
 
 
@@ -68,10 +67,7 @@ def follow(request):
 def unfollow(request):
     unfollowed = get_object_or_404(
         get_user_model(), username=request.POST['username'])
-        
-    relationship = get_object_or_404(
-        Relationship, follower=request.user, following=unfollowed)
-    relationship.delete()
+    request.user.unfollow(unfollowed)
     return redirect(request.GET.get('next', '/'))
 
 

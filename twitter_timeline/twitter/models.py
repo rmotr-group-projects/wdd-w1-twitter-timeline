@@ -35,6 +35,14 @@ class User(AbstractUser):
     def is_following(self, twitter_profile):
         return Relationship.objects.filter(
             follower=self, following=twitter_profile).exists()
+
+    @property
+    def following(self):
+        return [rel.following for rel in Relationship.objects.filter(follower=self)]
+
+    @property
+    def followers(self):
+        return [rel.following for rel in Relationship.objects.filter(following=self)]
         
     @property
     def count_following(self):
