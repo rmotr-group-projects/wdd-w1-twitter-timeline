@@ -19,6 +19,19 @@ class Relationship(models.Model):
     
 class User(AbstractUser):
     
+    def follow(self, twitter_profile):
+        try:
+            Relationship.objects.get(follower=self, following=twitter_profile)
+        except Relationship.DoesNotExist:
+            Relationship.objects.create(follower=self, following=twitter_profile)
+        
+    def unfollow(self, twitter_profile):
+        try:
+            rel = Relationship.objects.get(follower=self, following=twitter_profile)
+        except Relationship.DoesNotExist:
+            pass
+        rel.delete()
+    
     def is_following(self, twitter_profile):
         try:
             Relationship.objects.get(follower=self, following=twitter_profile)
@@ -26,3 +39,10 @@ class User(AbstractUser):
             return False
         return True
         
+    @property
+    def count_following(self):
+        return Relationship.objects.filter(follower=self).count()
+        
+    @property
+    def count_followers(self):
+        return Relationship.objects.filter(following=self).count()        

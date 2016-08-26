@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django_webtest import WebTest
 
-from twitter.models import Tweet, Relationship, User
+from twitter.models import Tweet, User
 
 try:
     from urllib.parse import quote
@@ -39,12 +39,11 @@ class TweetTimelineTestCase(BaseTwitterCloneTestCase):
     def test_timeline(self):
         "Should list tweets from both authenticated user and users that he is following"
         # Preconditions
-        Relationship.objects.create(follower=self.jack, following=self.ev)
-        Relationship.objects.create(follower=self.jack, following=self.larry)
+        self.jack.follow(self.ev)
+        self.jack.follow(self.larry)
         Tweet.objects.create(user=self.jack, content='Tweet Jack 1')
         Tweet.objects.create(user=self.ev, content='Tweet Evan 1')
         Tweet.objects.create(user=self.larry, content='Tweet Larry 1')
-        self.assertEqual(Relationship.objects.count(), 2)
         self.assertEqual(Tweet.objects.count(), 3)
         
         # first user timeline
@@ -73,52 +72,67 @@ class TweetTimelineTestCase(BaseTwitterCloneTestCase):
         
     def test_timeline_follow_button(self):
         "Should show follow button when authenticated user is not following current twitter profile"
+        # Preconditions
         resp = self.app.get('/evan', user=self.jack)
         button = resp.html.find('div', class_='relationship-button')
         self.assertTrue('Follow' in button.text)
         
-        Relationship.objects.create(follower=self.jack, following=self.ev)
+        self.jack.follow(self.ev)
+        
+        # Postconditions
         resp = self.app.get('/evan', user=self.jack)
         button = resp.html.find('div', class_='relationship-button')        
         self.assertFalse('Follow' in button.text)
         
     def test_timeline_follow_user(self):
         "Should create a Relationship between authenticated user and given twitter profile"
-        self.assertEqual(Relationship.objects.count(), 0)
+        # Preconditions
+        self.assertEqual(self.jack.count_following, 0)
+        self.assertEqual(self.ev.count_followers, 0)        
+        self.assertFalse(self.jack.is_following(self.ev))
         
         resp = self.app.get('/evan', user=self.jack)
         form = resp.forms['follow-{}'.format(self.ev.username)]
         follow_user = form.submit()
         
+        # Postconditions
         self.assertEqual(follow_user.status_code, 302)
-        self.assertEqual(Relationship.objects.count(), 1)
-        Relationship.objects.get(follower=self.jack, following=self.ev)
+        self.assertEqual(self.jack.count_following, 1)
+        self.assertEqual(self.ev.count_followers, 1)
+        self.assertTrue(self.jack.is_following(self.ev))
         
     def test_timeline_unfollow_button(self):
         "Should show unfollow button when authenticated user is following current twitter profile"
-        Relationship.objects.create(follower=self.jack, following=self.ev)
+        # Preconditions
+        self.jack.follow(self.ev)
         resp = self.app.get('/evan', user=self.jack)
         button = resp.html.find('div', class_='relationship-button')
         self.assertTrue('Unfollow' in button.text)
         
-        Relationship.objects.get(follower=self.jack, following=self.ev).delete()
+        self.jack.unfollow(self.ev)
+        
+        # Postconditions
         resp = self.app.get('/evan', user=self.jack)
         button = resp.html.find('div', class_='relationship-button')        
         self.assertFalse('Unfollow' in button.text)        
         
     def test_timeline_unfollow_user(self):
         "Should delete a Relationship between authenticated user and given twitter profile"
-        Relationship.objects.create(follower=self.jack, following=self.ev)
-        self.assertEqual(Relationship.objects.count(), 1)
+        # Preconditions
+        self.jack.follow(self.ev)
+        self.assertEqual(self.jack.count_following, 1)
+        self.assertEqual(self.ev.count_followers, 1)        
+        self.assertTrue(self.jack.is_following(self.ev))
         
         resp = self.app.get('/evan', user=self.jack)
         form = resp.forms['unfollow-{}'.format(self.ev.username)]
         follow_user = form.submit()
         
+        # Postconditions
         self.assertEqual(follow_user.status_code, 302)
-        self.assertEqual(Relationship.objects.count(), 0)
-        with self.assertRaises(Relationship.DoesNotExist):
-            Relationship.objects.get(follower=self.jack, following=self.ev)        
+        self.assertEqual(self.jack.count_following, 0)
+        self.assertEqual(self.ev.count_followers, 0)    
+        self.assertFalse(self.jack.is_following(self.ev))
 
 
 class NotAuthenticatedTestCase(BaseTwitterCloneTestCase):
