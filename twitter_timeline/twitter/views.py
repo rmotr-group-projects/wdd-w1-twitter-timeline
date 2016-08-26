@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
+from django.http.response import HttpResponseNotFound
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import logout as django_logout, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.conf import settings
 from django.db.models import Q
 
-from .models import Tweet, Relationship
+from .models import Tweet, Relationship, User
 from .forms import TweetForm
 
 
@@ -38,16 +40,40 @@ def home(request, username=None):
     else:
         form = TweetForm()
         if username is not None:
-            user = get_object_or_404(get_user_model(), username=username)
+            user = get_object_or_404(User, username=username)
             form = None
     users_following = [rel.following for rel 
                        in Relationship.objects.filter(follower=user)]
     tweets = Tweet.objects.filter(Q(user=user) | Q(user__in=users_following))
+    following_profile = request.user.is_following(user)
     return render(request, 'feed.html', {
         'form': form,
         'twitter_profile': user,
-        'tweets': tweets
+        'tweets': tweets,
+        'following_profile': following_profile
     })
+
+
+@login_required()
+@require_POST
+def follow(request):
+    followed = get_object_or_404(User, username=request.POST['username'])
+    Relationship.objects.create(follower=request.user, following=followed)    
+    return redirect(request.GET.get('next', '/'))
+
+
+@login_required()
+@require_POST
+def unfollow(request):
+    unfollowed = get_object_or_404(User, username=request.POST['username'])
+    try:
+        Relationship.objects.get(
+            follower=request.user, following=unfollowed).delete()
+    except Relationship.DoesNotExist:
+        return HttpResponseNotFound(
+            'Relationship between authenticated user and '
+            'given username does not exist')
+    return redirect(request.GET.get('next', '/'))
 
 
 @login_required()
