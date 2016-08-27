@@ -19,5 +19,22 @@ class Tweet(models.Model):
         ordering = ['-created']
 
 
+class UserRelationship(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    following = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+')
+
+
 class User(AbstractUser):
-    pass
+    def follow(self, other_user):
+        pass
+
+    def unfollow(self, other_user):
+        pass
+
+    @property
+    def all_following(self):
+        pass
+
+    @property
+    def all_followers(self):
+        pass
