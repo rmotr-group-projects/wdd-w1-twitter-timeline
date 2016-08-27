@@ -1,12 +1,13 @@
-from django.shortcuts import redirect, get_object_or_404, render
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth import logout as django_logout
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST, require_GET
 from django.contrib import messages
+from django.contrib.auth import logout as django_logout
 from django.contrib.auth import get_user_model
-from .models import Tweet
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_POST
+
 from .forms import TweetForm
+from .models import Tweet
 
 
 @login_required
