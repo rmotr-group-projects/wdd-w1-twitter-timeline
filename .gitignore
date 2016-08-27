@@ -90,3 +90,4 @@ ENV/
 
 *.sqlite3
 .~c9*
+.idea
