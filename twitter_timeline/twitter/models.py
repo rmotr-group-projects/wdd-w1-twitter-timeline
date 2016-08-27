@@ -30,6 +30,9 @@ class User(AbstractUser):
     def unfollow(self, other_user):
         pass
 
+    def is_following(self, other_user):
+        pass
+
     @property
     def all_following(self):
         pass
