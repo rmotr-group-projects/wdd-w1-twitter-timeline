@@ -40,3 +40,11 @@ class User(AbstractUser):
     @property
     def all_followers(self):
         pass
+
+    @property
+    def count_following(self):
+        pass
+
+    @property
+    def count_followers(self):
+        pass

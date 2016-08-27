@@ -36,7 +36,10 @@ def home_page(request):
 def user_profile(request, username):
     user = get_object_or_404(get_user_model(), username=username)
     tweets = Tweet.objects.filter(user=user)
-    return render(request, 'feed.html', {'tweets': tweets, 'user': username, 'other_user': username})
+    context = {'tweets': tweets, 'user': username, 'other_user': username}
+    if request.user.is_authenticated() and request.user.is_following(username):
+        context.update(follow=True)
+    return render(request, 'feed.html', context)
 
 
 @login_required

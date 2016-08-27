@@ -47,7 +47,7 @@
                 {% if request.user.is_authenticated %}
                   <li><a href="{% url 'twitter:logout' %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></li>
                 {% else %}
-                  <li><a href="{% url 'twitter:login' %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
+                  <li><a href="{% url 'twitter:login' %}?next={{ request.path }}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
                 {% endif %}
               </ul>
             </div>
