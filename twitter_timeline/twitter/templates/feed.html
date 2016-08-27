@@ -21,12 +21,34 @@
         </div>
       {% endif %}
 
+      {% if other_user %}
+        <div class="row">
+          <h2>Browsing <strong>@{{ other_user }}</strong</h2>
+        </div>
+      {% endif %}
+
+      {% if other_user %}
+        <div class="row relationship-button">
+          {% if follow %}
+            <form id="unfollow-{{ other_user }}" role="form" class='tweet-form'
+                  action="{% url 'twitter:unfollow' %}?next={% url 'twitter:user_feed' other_user %}" method="POST">
+          {% else %}
+            <form id="follow-{{ other_user }}" role="form" class='tweet-form'
+                  action="{% url 'twitter:follow' %}?next={% url 'twitter:user_feed' other_user %}" method="POST">
+          {% endif %}
+          {% csrf_token %}
+          <input type="hidden" name="username" value="{{ other_user }}"/>
+          <button type="submit" class="btn btn-danger pull-right">Unfollow</button>
+          </form>
+        </div>
+      {% endif %}
+
       <div class="row tweet-feed">
 
         {% for tweet in tweets %}
           <div class="well well-large tweet-container">
 
-            {% if delete_button %}
+            {% if tweet.user == request.user %}
               <form id='delete-tweet-form-{{ tweet.id }}'
                     action="{% url 'twitter:delete_tweet' tweet.id %}?next={{ request.path }}" method="POST">
                 {% csrf_token %}
@@ -46,6 +68,7 @@
         {% endfor %}
 
       </div>
+
     </div>
   </div>
 
