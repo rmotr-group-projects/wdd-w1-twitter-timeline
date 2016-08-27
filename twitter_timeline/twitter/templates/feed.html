@@ -27,24 +27,26 @@
         </div>
       {% endif %}
 
-      {% if other_user %}
-        <div class="row relationship-button">
-          {% if follow %}
-            <form id="unfollow-{{ other_user }}" role="form" class='tweet-form'
-                  action="{% url 'twitter:unfollow' %}?next={% url 'twitter:user_feed' other_user %}" method="POST">
-          {% else %}
-            <form id="follow-{{ other_user }}" role="form" class='tweet-form'
-                  action="{% url 'twitter:follow' %}?next={% url 'twitter:user_feed' other_user %}" method="POST">
-          {% endif %}
-          {% csrf_token %}
-          <input type="hidden" name="username" value="{{ other_user }}"/>
-          <button type="submit" class="btn btn-{% if follow %}info{% else %}danger{% endif %} pull-right">
-            {% if follow %}F{% else %}Unf{% endif %}ollow
-          </button>
-          </form>
-        </div>
+      {% if request.user.is_authenticated %}
+        {% if other_user %}
+          <div class="row relationship-button">
+            {% if follow %}
+              <form id="unfollow-{{ other_user }}" role="form" class='tweet-form'
+                    action="{% url 'twitter:unfollow' %}?next={% url 'twitter:user_feed' other_user %}" method="POST">
+            {% else %}
+              <form id="follow-{{ other_user }}" role="form" class='tweet-form'
+                    action="{% url 'twitter:follow' %}?next={% url 'twitter:user_feed' other_user %}" method="POST">
+            {% endif %}
+            {% csrf_token %}
+            <input type="hidden" name="username" value="{{ other_user }}"/>
+            <button type="submit" class="btn btn-{% if follow %}info{% else %}danger{% endif %} pull-right">
+              {% if follow %}F{% else %}Unf{% endif %}ollow
+            </button>
+            </form>
+          </div>
+        {% endif %}
       {% endif %}
-
+    
       <div class="row tweet-feed">
 
         {% for tweet in tweets %}
