@@ -15,6 +15,9 @@ class Tweet(models.Model):
     content = models.CharField(max_length=140, blank=True)
     created = models.DateTimeField(auto_now_add=True, null=True)
 
+    class Meta:
+        ordering = ['-created']
+
 
 class User(AbstractUser):
     pass

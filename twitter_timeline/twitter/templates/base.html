@@ -21,7 +21,7 @@
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
     {% endblock %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'twitter/styles.css' %}"/>
 
   {% endblock %}
 </head>
@@ -44,10 +44,10 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
               <ul class="nav navbar-nav navbar-right">
-                {% if user.is_authenticated %}
-                  <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></li>
+                {% if request.user.is_authenticated %}
+                  <li><a href="{% url 'twitter:logout' %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Log out</a></li>
                 {% else %}
-                  <li><a href="{% url 'login' %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
+                  <li><a href="{% url 'twitter:login' %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log in</a></li>
                 {% endif %}
               </ul>
             </div>
@@ -61,7 +61,7 @@
         <div class="row">
           <div class="col-sm-12 messages">
             {% for message in messages %}
-              <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">
+              <div class="alert {% if message.tags %} {{ message.tags }}{% endif %}" role="alert">
                 {{ message }}
               </div>
             {% endfor %}
