@@ -38,7 +38,9 @@
           {% endif %}
           {% csrf_token %}
           <input type="hidden" name="username" value="{{ other_user }}"/>
-          <button type="submit" class="btn btn-danger pull-right">Unfollow</button>
+          <button type="submit" class="btn btn-{% if follow %}info{% else %}danger{% endif %} pull-right">
+            {% if follow %}F{% else %}Unf{% endif %}ollow
+          </button>
           </form>
         </div>
       {% endif %}
