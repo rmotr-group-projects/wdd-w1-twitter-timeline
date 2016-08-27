@@ -3,7 +3,7 @@
 {% block content %}
 <div class="col-sm-2"></div>
 <div class="col-sm-8">
-  
+
   {% if request.user == twitter_profile %}
     <div class="row">
         <form role="form" class='tweet-form' action="" method="POST">
@@ -25,7 +25,11 @@
         </form>
     </div>
   {% endif %}
-  
+  {% if request.path != '/' %}
+  <div class="row">
+    <h2>Browsing <strong>@jack</strong</h2>
+  </div>
+  {% endif %}
   <div class="row relationship-button">
     {% if request.user != twitter_profile %}
       {% if following_profile %}
@@ -41,11 +45,11 @@
           <button type="submit" class="btn btn-info pull-right">Follow</button>
         </form>
       {% endif %}
-    {% endif %}    
+    {% endif %}
   </div>
-  
+
   <div class="row tweet-feed">
-    
+
       {% for tweet in tweets %}
       <div class="well well-large tweet-container">
           {% if twitter_profile == request.user and tweet.user == request.user %}
