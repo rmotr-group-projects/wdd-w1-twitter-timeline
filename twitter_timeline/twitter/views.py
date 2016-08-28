@@ -23,8 +23,9 @@ def home_page(request):
             messages.success(request, 'Tweet created!')
     else:
         form = TweetForm()
-    # TODO following too
-    tweets = Tweet.objects.filter(user=request.user)
+    list_of_users = [request.user]
+    list_of_users += request.user.all_following
+    tweets = Tweet.objects.filter(user__in=list_of_users)
     context = {
         'form': form,
         'tweets': tweets,

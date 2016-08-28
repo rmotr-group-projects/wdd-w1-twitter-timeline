@@ -74,6 +74,7 @@ class TweetTimelineTestCase(WebTest):
         resp = self.app.get('/', user=self.jack)
         feed = resp.html.find('div', class_='tweet-feed')
         tweets = feed.find_all('div', class_='tweet-container')
+        # The normal datetime format is good enough, why is this format enforced?
         self.assertTrue('06/22/2016 9:55 p.m.' in
                         tweets[0].find('span', class_='created-datetime').text)
         self.assertTrue('06/22/2015 9:55 p.m.' in
