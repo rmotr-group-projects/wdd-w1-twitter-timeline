@@ -138,6 +138,7 @@ class TweetTimelineTestCase(WebTest):
 
         resp = self.app.get('/evan', user=self.jack)
         form = resp.forms['unfollow-{}'.format(self.ev.username)]
+        # raise Exception(resp)
         follow_user = form.submit()
 
         # Postconditions

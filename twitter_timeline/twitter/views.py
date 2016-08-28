@@ -42,8 +42,6 @@ def user_profile(request, username):
     user = get_object_or_404(get_user_model(), username=username)
     tweets = Tweet.objects.filter(user=user)
     context = {'tweets': tweets, 'user': username, 'other_user': username}
-    print("is auth'd:{}".format(request.user.is_authenticated()))
-    print("is following:{}".format(request.user.is_following(user)))
     if request.user.is_authenticated() and not request.user.is_following(user):
         context.update(follow=True)
     return render(request, 'feed.html', context)
