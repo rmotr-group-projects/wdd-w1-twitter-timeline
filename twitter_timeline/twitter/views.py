@@ -41,7 +41,9 @@ def user_profile(request, username):
     user = get_object_or_404(get_user_model(), username=username)
     tweets = Tweet.objects.filter(user=user)
     context = {'tweets': tweets, 'user': username, 'other_user': username}
-    if request.user.is_authenticated() and request.user.is_following(username):
+    print("is auth'd:{}".format(request.user.is_authenticated()))
+    print("is following:{}".format(request.user.is_following(user)))
+    if request.user.is_authenticated() and not request.user.is_following(user):
         context.update(follow=True)
     return render(request, 'feed.html', context)
 
@@ -49,13 +51,17 @@ def user_profile(request, username):
 @login_required
 @require_POST
 def follow(request):
-    pass
+    user_to_follow = get_object_or_404(get_user_model(), username=request.POST['username'])
+    request.user.follow(user_to_follow)
+    return redirect(request.GET.get('next', '/'))
 
 
 @login_required
 @require_POST
 def unfollow(request):
-    pass
+    user_to_unfollow = get_object_or_404(get_user_model(), username=request.POST['username'])
+    request.user.unfollow(user_to_unfollow)
+    return redirect(request.GET.get('next', '/'))
 
 
 @login_required()
