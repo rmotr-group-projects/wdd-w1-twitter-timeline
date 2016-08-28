@@ -25,26 +25,26 @@ class UserRelationship(models.Model):
 
 class User(AbstractUser):
     def follow(self, other_user):
-        pass
+        UserRelationship.objects.get_or_create(user=self, following=other_user)
 
     def unfollow(self, other_user):
-        pass
+        UserRelationship.objects.filter(user=self, following=other_user).delete()
 
     def is_following(self, other_user):
-        pass
+        return UserRelationship.objects.filter(user=self, following=other_user).exists()
 
     @property
     def all_following(self):
-        pass
+        return [r.following for r in UserRelationship.objects.filter(user=self)]
 
     @property
     def all_followers(self):
-        pass
+        return [r.user for r in UserRelationship.objects.filter(following=self)]
 
     @property
     def count_following(self):
-        pass
+        return UserRelationship.objects.filter(user=self).count()
 
     @property
     def count_followers(self):
-        pass
+        return UserRelationship.objects.filter(follwing=self).count()

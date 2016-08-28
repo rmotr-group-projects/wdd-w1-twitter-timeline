@@ -3,8 +3,9 @@
 from __future__ import unicode_literals
 
 import json
-from django.db import migrations
+
 from django.contrib.auth.hashers import make_password
+from django.db import migrations
 
 
 def insert_tweets(apps, schema_editor):
