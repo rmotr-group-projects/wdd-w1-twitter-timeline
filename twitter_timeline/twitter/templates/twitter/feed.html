@@ -1,0 +1,70 @@
+{% extends 'twitter/base.html'%}
+
+{% block content %}
+
+        <div class="row">
+
+            <div class="col-sm-2"></div>
+            <div class="col-sm-8">
+            {% if feed_user %}
+            
+                <!-- USER HEADER AND RELATIONSHIP BUTTON -->
+                <div class="row">
+                    <h2>Browsing <strong>@{{ feed_user }}</strong</h2>
+                </div>
+
+                <div class="row relationship-button">
+
+                    <form id="{% if is_following %}un{% endif %}follow-{{ feed_user }}" role="form" class='tweet-form' action="/{% if is_following %}un{% endif %}follow?next=/{{ feed_user }}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="{{ feed_user }}" />
+                        <button type="submit" class="btn {{ btn_type }} pull-right">
+                            {% if is_following %}Unf{% else %}F{% endif %}ollow
+                        </button>
+                    </form>
+
+                </div>
+
+            {% else %}
+            
+                <!-- TWEET FORM -->
+                <div class="row">
+                    <form role="form" class='tweet-form' action="create_tweet/" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group ">
+                            <textarea class="form-control" name="content" placeholder="Write your tweet here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info pull-right">Submit</button>
+                    </form>
+                </div>
+            
+            {% endif %}
+
+                <div class="row tweet-feed">
+
+                    {% for tweet in all_tweets %}
+
+                    <div class="well well-large tweet-container">
+                        
+                        {% if request.user == tweet.user %}
+                        <form id='delete-tweet-form-{{ tweet.id }}' action="/tweet/{{ tweet.id }}/delete?next={{ request.path }}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="close" title="Delete this tweet"><span aria-hidden="true">&times;</span></button>
+                        </form>
+                        {% endif %}
+
+                        <div>
+                            <strong>@{{ tweet.user.username }}</strong><!--'06/22/2016 9:55 p.m.'-->
+                            <span class="label label-primary created-datetime">{{ tweet.created|date:"m/d/Y g:i a" }}</span>
+                        </div>
+                        <div class='tweet-content'>{{ tweet.content }}</div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+                
+            </div>
+            <div class="col-sm-2"></div>
+        </div>
+
+{% endblock %}
