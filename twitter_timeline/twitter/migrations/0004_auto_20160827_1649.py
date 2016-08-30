@@ -5,7 +5,6 @@ from datetime import datetime
 
 import json
 from django.db import migrations
-from django.utils.timezone import utc
 
 
 def convert_tweets(apps, schema_editor):
@@ -28,9 +27,7 @@ def string_to_datetime(dt_string):
     """
     Returns a datetime.datetime object converted from the dt_string parameter.
     """
-    dt = datetime.strptime(dt_string, "%Y-%m-%dT%H:%M:%S")
-    dt.tzinfo = utc
-    return dt
+    return datetime.strptime(dt_string, "%Y-%m-%dT%H:%M:%S")
 
 
 class Migration(migrations.Migration):
